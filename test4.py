@@ -1,6 +1,6 @@
 import json
 import pandas as pd
-from mysql_crud import MySQLInterface
+from mysqlApi import MySQLInterface
 def is_valid_json(json_str):
     """检查字符串是否是有效的JSON"""
     try:

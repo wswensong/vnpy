@@ -1,4 +1,7 @@
-from constantDefinition import categories
+from constantDefinition import categories, breedCode, continuousContracts
+import akshare as ak
+from mysqlApi import MySQLInterface
+import json
 def classify_items(items_to_classify):
     # 分类结果
     classified_items = {}
@@ -20,9 +23,35 @@ def classify_items(items_to_classify):
 
     return classified_items
 
-# 要分类的商品列表
-items_to_classify = ["20号胶", "塑料", "PVC", "乙二醇", "螺纹钢", "豆粕", "菜籽粕"]
+def merge_and_rename_keys(data):
 
-# 调用分类函数并打印结果
-classified_result = classify_items(items_to_classify)
-print(classified_result)
+    if "锌" in data and "沪锌" in data:
+        data["锌"] = [a + b for a, b in zip(data["锌"], data["沪锌"])]
+        del data["沪锌"]
+    elif "沪锌" in data:
+        data["锌"] = data.pop("沪锌")
+
+    # 合并 "号胶" 和 "20号胶"
+    if "号胶" in data and "20号胶" in data:
+        data["20号胶"] = [a + b for a, b in zip(data["号胶"], data["20号胶"])]
+        del data["号胶"]
+    elif "号胶" in data:
+        data["20号胶"] = data.pop("号胶")
+    return data
+
+
+# memberPositionsValet
+# db = MySQLInterface(host='101.132.121.208', database='position', user='wsuong', password='Ws,1008351110')
+db = MySQLInterface(host='localhost', database='position', user='root', password='Ws,1008351110')
+db.connect()
+select_query = "SELECT * FROM memberPositions ORDER BY datetime DESC LIMIT 5;"
+employees = db.fetch_data(select_query)
+db.disconnect()
+with open('officeName.json', 'r', encoding='utf-8') as f:
+    officeName = json.load(f).keys()
+for employee in employees:
+    for office in officeName:
+        if office in employee and employee[office]:
+            reviseEmployee = merge_and_rename_keys(json.loads(employee[office]))
+            print(classify_items(reviseEmployee))    
+        
