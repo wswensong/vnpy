@@ -47,7 +47,7 @@ class MySQLInterface:
                 cursorclass=pymysql.cursors.DictCursor,
                 autocommit=True  # 启用自动提交
             )
-            print(f"成功连接到MySQL数据库 {self.database}")
+            # print(f"成功连接到MySQL数据库 {self.database}")
             return True
         except Exception as e:
             print(f"数据库连接失败: {str(e)}")
@@ -69,7 +69,7 @@ class MySQLInterface:
         """
         if self.connection and self.connection.open:
             self.connection.close()
-            print("Disconnected from MySQL database")
+            # print("Disconnected from MySQL database")
 
     # def execute_query(self, query, params=None):
     #     """

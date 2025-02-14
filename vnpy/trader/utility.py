@@ -13,6 +13,7 @@ from math import floor, ceil
 
 import numpy as np
 import talib
+import pandas as pd
 
 from .object import BarData, TickData
 from .constant import Exchange, Interval
@@ -504,7 +505,7 @@ class ArrayManager(object):
         self.volume_array: np.ndarray = np.zeros(size)
         self.turnover_array: np.ndarray = np.zeros(size)
         self.open_interest_array: np.ndarray = np.zeros(size)
-
+        self.datetime_array: np.ndarray = np.zeros(size)
     def update_bar(self, bar: BarData) -> None:
         """
         Update new bar data into array manager.
@@ -520,6 +521,7 @@ class ArrayManager(object):
         self.volume_array[:-1] = self.volume_array[1:]
         self.turnover_array[:-1] = self.turnover_array[1:]
         self.open_interest_array[:-1] = self.open_interest_array[1:]
+        self.datetime_array[:-1] = self.datetime_array[1:]
 
         self.open_array[-1] = bar.open_price
         self.high_array[-1] = bar.high_price
@@ -528,6 +530,9 @@ class ArrayManager(object):
         self.volume_array[-1] = bar.volume
         self.turnover_array[-1] = bar.turnover
         self.open_interest_array[-1] = bar.open_interest
+        self.datetime_array[-1] = self.datetime_array[-1] = np.datetime64(pd.to_datetime(bar.datetime).date())
+        # print(bar.datetime)
+        # print('dddd')
 
     @property
     def open(self) -> np.ndarray:

@@ -11,6 +11,7 @@ from vnpy_ctastrategy import (
     BarGenerator,
     ArrayManager,
 )
+from position_analysis import main
 from vnpy.trader.constant import Interval
 import pandas as pd
 from scipy.ndimage import gaussian_filter1d
@@ -36,7 +37,7 @@ class maStrategy(CtaTemplate):
             interval=Interval.DAILY,
             daily_end=time(hour=22, minute=59)
         )
-        self.am = ArrayManager(50)
+        self.am = ArrayManager(5)
 
     def on_init(self):
         """初始化策略（必须由用户继承实现）"""
@@ -75,11 +76,8 @@ class maStrategy(CtaTemplate):
             'volume': self.am.volume_array,
             'turnover': self.am.turnover_array
         }
-        selected_columns = pd.DataFrame(data).set_index('datetime')
-        close = selected_columns['close'].values
-        ma = gaussian_filter1d(data, sigma=5)
-        ma_diff = np.diff(ma)
-        
+        member_data = main('memberPositions', data['datetime'])
+        print(member_data)
     def on_trade(self, trade: TradeData):
         """
         Callback of new trade data update.
