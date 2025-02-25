@@ -34,7 +34,7 @@ def on_log_with_account(event):
     msg = f"{log.time}\t{log.msg}"
     print(msg)  # 添加调试信息
 
-event_engine.register(EVENT_LOG, on_log_with_account)
+# event_engine.register(EVENT_LOG, on_log_with_account)
 
 def on_tick(event):
     tick = event.data
@@ -45,7 +45,7 @@ event_engine.register(EVENT_TICK, on_tick)
 def on_account(event):
     account = event.data
     # print(f"账户信息: 可用资金: {account.available}, 总资产: {account.balance}")
-event_engine.register(EVENT_ACCOUNT, on_account)
+# event_engine.register(EVENT_ACCOUNT, on_account)
 
 
 
@@ -86,5 +86,5 @@ def send_buy_order():
 # event_engine.register(EVENT_QUOTE, on_quote)
 
 # 保持程序运行
-while True:
-    time.sleep(1)
+# while True:
+#     time.sleep(1)

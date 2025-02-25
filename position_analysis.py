@@ -53,8 +53,8 @@ def data_cleansing(employees):
     return cleaned_employees
 
 def data_wrangling(linked_list_of_positions):
-    db = MySQLInterface(host='101.132.121.208', database='quotes', user='wsuong', password='Ws,1008351110')
-    # db = MySQLInterface(host='localhost', database='quotes', user='root', password='Ws,1008351110')
+    # db = MySQLInterface(host='101.132.121.208', database='quotes', user='wsuong', password='Ws,1008351110')
+    db = MySQLInterface(host='localhost', database='quotes', user='root', password='Ws,1008351110')
     db.connect()
     the_amount_of_funds_held_by_the_member = {}
     collection_of_closing_prices = {}
@@ -79,42 +79,6 @@ def data_wrangling(linked_list_of_positions):
                     the_amount_of_funds_held_by_the_member[position_data_time][key][index][j] = single_symbol_position_funds
     db.disconnect()
     return the_amount_of_funds_held_by_the_member
-
-# def collate_into_visual_data(member_dict):
-#     organized_data = {}
-
-#     for date, companies in member_dict.items():
-#         organized_data[date] = {}
-#         for company, commodities in companies.items():
-#             for commodity_type, prices in commodities.items():
-#                 if commodity_type not in organized_data[date]:
-#                     organized_data[date][commodity_type] = {}
-#                 for commodity, price in prices.items():
-#                     if commodity not in organized_data[date][commodity_type]:
-#                         organized_data[date][commodity_type][commodity] = []
-#                     organized_data[date][commodity_type][commodity].append(round(price, 1))
-
-#     # 计算每个日期下每个商品的总和
-#     summed_data = []
-
-#     for date, commodity_types in organized_data.items():
-#         for commodity_type, commodities in commodity_types.items():
-#             for commodity, prices in commodities.items():
-#                 summed_data.append({
-#                     'Date': date,
-#                     'Commodity Type': commodity_type,
-#                     'Commodity': commodity,
-#                     'Sum of Prices': round(sum(prices), 1)
-#                 })
-
-#     # 转换为DataFrame
-#     df = pd.DataFrame(summed_data)
-
-#     # 按商品类型和商品分组，并将价格总和转换为列表
-#     grouped_df = df.pivot(index=['Commodity Type', 'Commodity'], columns='Date', values='Sum of Prices').reset_index()
-#     return grouped_df
-
-
 
 def calculate_weighted_change_rate(prices):
     """
@@ -194,24 +158,20 @@ def send_dingtalk_message(message):
         }
         requests.post(webhook_url, headers=headers, data=json.dumps(data))
 
-def main(sql_name):
-    # memberPositionsValet  memberPositions
-    db = MySQLInterface(host='101.132.121.208', database='position', user='wsuong', password='Ws,1008351110')
-    # db = MySQLInterface(host='localhost', database='position', user='root', password='Ws,1008351110')
+def positionAnalysis(sql_name):
+    db = MySQLInterface(host='localhost', database='position', user='root', password='Ws,1008351110')
     db.connect()
-    select_query = f"SELECT * FROM {sql_name} ORDER BY datetime DESC LIMIT 3;"
-    # id_query = f"SELECT id FROM {sql_name} WHERE datetime = '{datetime}';"
-    # id_mysql = db.fetch_data(id_query)[0]['id']
-    # select_query = f"SELECT * FROM {sql_name} WHERE id <= {id_mysql} ORDER BY datetime DESC LIMIT 3;"
-    employees = db.fetch_data(select_query)
+    select_query = f"SELECT * FROM {sql_name} ORDER BY datetime DESC LIMIT 4;"
+    employees_ = db.fetch_data(select_query)
+    employees = employees_[1:]
+    
     db.disconnect()
     cleaned_employees = data_cleansing(employees)
     organize_member_position_data = data_wrangling(cleaned_employees)
     grouped_df = collate_into_weighted_change_rate(organize_member_position_data)
-    # return grouped_df
-    print(grouped_df.to_markdown(index=False))
     send_dingtalk_message(f'通知\n{grouped_df.to_markdown(index=False)}')
+    # print(grouped_df.to_markdown(index=False))
     
 if __name__ == "__main__":
-    main('memberPositions')
-    main('memberPositionsValet')
+    positionAnalysis('memberPositions')
+    # main('memberPositionsValet')

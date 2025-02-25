@@ -1,19 +1,42 @@
-import json
-import pandas as pd
-from mysqlApi import MySQLInterface
-def is_valid_json(json_str):
-    """检查字符串是否是有效的JSON"""
-    try:
-        json.loads(json_str)
-        return True
-    except ValueError:
-        return False
-db = MySQLInterface(host='localhost', database='wsuong', user='root', password='Ws,1008351110')
-db.connect()
-positionData = db.fetch_data("SELECT * FROM (SELECT * FROM memberPositions ORDER BY datetime DESC LIMIT 30) AS subquery ORDER BY datetime ASC;")
-db.disconnect()
-for row in positionData:
-    for key, value in row.items():
-        if isinstance(value, str) and is_valid_json(value):
-            row[key] = json.loads(value)
-df = pd.DataFrame(positionData)['国泰君安']
+from vnpy.event import EventEngine
+from vnpy.trader.event import *  # 确保使用正确的事件名称
+from vnpy.trader.engine import MainEngine, OmsEngine
+from vnpy_ctp import CtpGateway
+from vnpy.trader.object import SubscribeRequest
+from vnpy.trader.constant import Exchange
+from settings import N_SHIJIE
+
+
+
+def on_tick_event(event):
+    tick = event.data
+    print(tick)
+
+def on_log_with_account(event):
+    log = event.data
+    msg = f"{log.time}\t{log.msg}"
+    print(msg)  # 添加调试信息
+
+
+
+# 初始化事件引擎
+event_engine = EventEngine()
+
+
+# 初始化主引擎
+main_engine = MainEngine(event_engine)
+
+# 添加CTP网关
+main_engine.add_gateway(CtpGateway)
+
+# 连接CTP网关
+main_engine.connect(N_SHIJIE, "CTP")
+
+
+# # 订阅特定合约
+req = SubscribeRequest(symbol="rb2505C3250", exchange=Exchange.SHFE)
+main_engine.subscribe(req, "CTP")
+
+event_engine.register(EVENT_TICK, on_tick_event)  # 确保使用正确的事件名称
+event_engine.register(EVENT_LOG, on_log_with_account)
+

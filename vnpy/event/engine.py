@@ -13,34 +13,36 @@ EVENT_TIMER = "eTimer"
 
 class Event:
     """
-    Event object consists of a type string which is used
-    by event engine for distributing event, and a data
-    object which contains the real data.
+    事件对象包含一个类型字符串，用于事件引擎分发事件，以及一个数据对象，包含实际的数据。
     """
 
     def __init__(self, type: str, data: Any = None) -> None:
-        """"""
+        """
+        初始化事件对象。
+
+        :param type: 事件类型，用于事件分发。
+        :param data: 事件数据，包含实际信息，默认为 None。
+        """
         self.type: str = type
         self.data: Any = data
 
 
-# Defines handler function to be used in event engine.
+# 定义事件引擎中使用的处理器函数类型。
 HandlerType: callable = Callable[[Event], None]
 
 
 class EventEngine:
     """
-    Event engine distributes event object based on its type
-    to those handlers registered.
+    事件引擎根据事件类型将事件对象分发给已注册的处理器。
 
-    It also generates timer event by every interval seconds,
-    which can be used for timing purpose.
+    它还每隔指定的时间间隔生成一个定时器事件，可用于定时目的。
     """
 
     def __init__(self, interval: int = 1) -> None:
         """
-        Timer event is generated every 1 second by default, if
-        interval not specified.
+        如果未指定时间间隔，默认每秒生成一次定时器事件。
+
+        :param interval: 定时器事件的时间间隔，默认为 1 秒。
         """
         self._interval: int = interval
         self._queue: Queue = Queue()
@@ -52,7 +54,7 @@ class EventEngine:
 
     def _run(self) -> None:
         """
-        Get event from queue and then process it.
+        从队列中获取事件并处理它。
         """
         while self._active:
             try:
@@ -63,11 +65,9 @@ class EventEngine:
 
     def _process(self, event: Event) -> None:
         """
-        First distribute event to those handlers registered listening
-        to this type.
+        首先将事件分发给已注册监听该类型的处理器。
 
-        Then distribute event to those general handlers which listens
-        to all types.
+        然后将事件分发给所有类型的通用处理器。
         """
         if event.type in self._handlers:
             [handler(event) for handler in self._handlers[event.type]]
@@ -77,7 +77,7 @@ class EventEngine:
 
     def _run_timer(self) -> None:
         """
-        Sleep by interval second(s) and then generate a timer event.
+        每隔指定的时间间隔休眠并生成一个定时器事件。
         """
         while self._active:
             sleep(self._interval)
@@ -86,7 +86,7 @@ class EventEngine:
 
     def start(self) -> None:
         """
-        Start event engine to process events and generate timer events.
+        启动事件引擎以处理事件并生成定时器事件。
         """
         self._active = True
         self._thread.start()
@@ -94,7 +94,7 @@ class EventEngine:
 
     def stop(self) -> None:
         """
-        Stop event engine.
+        停止事件引擎。
         """
         self._active = False
         self._timer.join()
@@ -102,14 +102,18 @@ class EventEngine:
 
     def put(self, event: Event) -> None:
         """
-        Put an event object into event queue.
+        将事件对象放入事件队列。
+
+        :param event: 要放入队列的事件对象。
         """
         self._queue.put(event)
 
     def register(self, type: str, handler: HandlerType) -> None:
         """
-        Register a new handler function for a specific event type. Every
-        function can only be registered once for each event type.
+        为特定事件类型注册一个新的处理器函数。每个函数只能为每个事件类型注册一次。
+
+        :param type: 事件类型。
+        :param handler: 处理器函数。
         """
         handler_list: list = self._handlers[type]
         if handler not in handler_list:
@@ -117,7 +121,10 @@ class EventEngine:
 
     def unregister(self, type: str, handler: HandlerType) -> None:
         """
-        Unregister an existing handler function from event engine.
+        从事件引擎中注销已有的处理器函数。
+
+        :param type: 事件类型。
+        :param handler: 处理器函数。
         """
         handler_list: list = self._handlers[type]
 
@@ -129,15 +136,18 @@ class EventEngine:
 
     def register_general(self, handler: HandlerType) -> None:
         """
-        Register a new handler function for all event types. Every
-        function can only be registered once for each event type.
+        为所有事件类型注册一个新的处理器函数。每个函数只能为每个事件类型注册一次。
+
+        :param handler: 处理器函数。
         """
         if handler not in self._general_handlers:
             self._general_handlers.append(handler)
 
     def unregister_general(self, handler: HandlerType) -> None:
         """
-        Unregister an existing general handler function.
+        注销已有的通用处理器函数。
+
+        :param handler: 处理器函数。
         """
         if handler in self._general_handlers:
             self._general_handlers.remove(handler)

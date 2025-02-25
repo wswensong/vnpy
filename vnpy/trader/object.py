@@ -15,8 +15,12 @@ ACTIVE_STATUSES = set([Status.SUBMITTING, Status.NOTTRADED, Status.PARTTRADED])
 @dataclass
 class BaseData:
     """
-    Any data object needs a gateway_name as source
-    and should inherit base data.
+    任何数据对象都需要一个gateway_name作为源，
+    并且应该继承基础数据类。
+
+    Attributes:
+        gateway_name (str): 数据的网关名称，用作数据来源的标识。
+        extra (Optional[dict]): 用于存储额外信息的字典，初始默认为None。
     """
 
     gateway_name: str
@@ -27,10 +31,55 @@ class BaseData:
 @dataclass
 class TickData(BaseData):
     """
-    Tick data contains information about:
-        * last trade in market
-        * orderbook snapshot
-        * intraday market statistics.
+    Tick数据包含以下信息：
+        * 最新市场成交信息
+        * 深度行情快照
+        * 当日市场统计信息
+
+    参数说明：
+    :param symbol: 交易品种代码
+    :param exchange: 交易所枚举类型
+    :param datetime: Tick数据的时间戳
+
+    :param name: 合约名称，默认为空字符串
+    :param volume: 成交量，默认为0
+    :param turnover: 成交额，默认为0
+    :param open_interest: 持仓量，默认为0
+    :param last_price: 最新价，默认为0
+    :param last_volume: 最新成交量，默认为0
+    :param limit_up: 涨停价，默认为0
+    :param limit_down: 跌停价，默认为0
+
+    :param open_price: 开盘价，默认为0
+    :param high_price: 最高价，默认为0
+    :param low_price: 最低价，默认为0
+    :param pre_close: 昨收盘价，默认为0
+
+    :param bid_price_1: 买1价，默认为0
+    :param bid_price_2: 买2价，默认为0
+    :param bid_price_3: 买3价，默认为0
+    :param bid_price_4: 买4价，默认为0
+    :param bid_price_5: 买5价，默认为0
+
+    :param ask_price_1: 卖1价，默认为0
+    :param ask_price_2: 卖2价，默认为0
+    :param ask_price_3: 卖3价，默认为0
+    :param ask_price_4: 卖4价，默认为0
+    :param ask_price_5: 卖5价，默认为0
+
+    :param bid_volume_1: 买1量，默认为0
+    :param bid_volume_2: 买2量，默认为0
+    :param bid_volume_3: 买3量，默认为0
+    :param bid_volume_4: 买4量，默认为0
+    :param bid_volume_5: 买5量，默认为0
+
+    :param ask_volume_1: 卖1量，默认为0
+    :param ask_volume_2: 卖2量，默认为0
+    :param ask_volume_3: 卖3量，默认为0
+    :param ask_volume_4: 卖4量，默认为0
+    :param ask_volume_5: 卖5量，默认为0
+
+    :param localtime: 本地时间，默认为None
     """
 
     symbol: str
@@ -78,14 +127,30 @@ class TickData(BaseData):
     localtime: datetime = None
 
     def __post_init__(self) -> None:
-        """"""
+        """
+        初始化后处理函数，生成vt_symbol。
+        """
         self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
 
 
 @dataclass
 class BarData(BaseData):
     """
-    Candlestick bar data of a certain trading period.
+    K线数据类，表示特定交易周期的K线数据，继承自BaseData。
+    
+    参数:
+        symbol (str): 交易合约代码
+        exchange (Exchange): 交易所枚举类型
+        datetime (datetime): K线时间戳
+        
+        interval (Interval, 可选): K线周期，默认为None
+        volume (float, 可选): 成交量，默认为0
+        turnover (float, 可选): 成交额，默认为0
+        open_interest (float, 可选): 持仓量，默认为0
+        open_price (float, 可选): 开盘价，默认为0
+        high_price (float, 可选): 最高价，默认为0
+        low_price (float, 可选): 最低价，默认为0
+        close_price (float, 可选): 收盘价，默认为0
     """
 
     symbol: str
@@ -102,15 +167,34 @@ class BarData(BaseData):
     close_price: float = 0
 
     def __post_init__(self) -> None:
-        """"""
+        """
+        初始化方法，在dataclass实例化后自动调用。
+        
+        总结:
+            该方法用于在初始化后设置vt_symbol属性，格式为"{symbol}.{exchange.value}"。
+        """
         self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
 
 
 @dataclass
 class OrderData(BaseData):
     """
-    Order data contains information for tracking lastest status
-    of a specific order.
+    订单数据类，用于跟踪特定订单的最新状态，继承自BaseData。
+
+    参数:
+        symbol (str): 交易合约代码
+        exchange (Exchange): 交易所枚举类型
+        orderid (str): 订单ID
+
+        type (OrderType, 可选): 订单类型，默认为限价单（LIMIT）
+        direction (Direction, 可选): 买卖方向，默认为None
+        offset (Offset, 可选): 开平仓标志，默认为无开平仓（NONE）
+        price (float, 可选): 订单价格，默认为0
+        volume (float, 可选): 订单数量，默认为0
+        traded (float, 可选): 已成交数量，默认为0
+        status (Status, 可选): 订单状态，默认为提交中（SUBMITTING）
+        datetime (datetime, 可选): 订单时间，默认为None
+        reference (str, 可选): 订单备注，默认为空字符串
     """
 
     symbol: str
@@ -128,22 +212,37 @@ class OrderData(BaseData):
     reference: str = ""
 
     def __post_init__(self) -> None:
-        """"""
+        """
+        初始化方法，在dataclass实例化后自动调用。
+        
+        总结:
+            该方法用于在初始化后设置vt_symbol和vt_orderid属性。
+            - vt_symbol格式为"{symbol}.{exchange.value}"
+            - vt_orderid格式为"{gateway_name}.{orderid}"
+        """
         self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
         self.vt_orderid: str = f"{self.gateway_name}.{self.orderid}"
 
     def is_active(self) -> bool:
         """
-        Check if the order is active.
+        检查订单是否处于活跃状态。
+
+        返回:
+            bool: 如果订单状态在ACTIVE_STATUSES集合中，则返回True，否则返回False。
         """
         return self.status in ACTIVE_STATUSES
 
     def create_cancel_request(self) -> "CancelRequest":
         """
-        Create cancel request object from order.
+        根据当前订单信息创建取消请求对象。
+
+        返回:
+            CancelRequest: 包含订单ID、合约代码和交易所信息的取消请求对象。
         """
         req: CancelRequest = CancelRequest(
-            orderid=self.orderid, symbol=self.symbol, exchange=self.exchange
+            orderid=self.orderid, 
+            symbol=self.symbol, 
+            exchange=self.exchange
         )
         return req
 
@@ -176,7 +275,18 @@ class TradeData(BaseData):
 @dataclass
 class PositionData(BaseData):
     """
-    Position data is used for tracking each individual position holding.
+    持仓数据类，用于跟踪每个持仓的具体信息，继承自BaseData。
+
+    参数:
+        symbol (str): 交易合约代码
+        exchange (Exchange): 交易所枚举类型
+        direction (Direction): 持仓方向（多头或空头）
+
+        volume (float, 可选): 持仓数量，默认为0
+        frozen (float, 可选): 冻结数量，默认为0
+        price (float, 可选): 平均开仓价格，默认为0
+        pnl (float, 可选): 持仓盈亏，默认为0
+        yd_volume (float, 可选): 昨日持仓数量，默认为0
     """
 
     symbol: str
@@ -190,7 +300,14 @@ class PositionData(BaseData):
     yd_volume: float = 0
 
     def __post_init__(self) -> None:
-        """"""
+        """
+        初始化方法，在dataclass实例化后自动调用。
+        
+        总结:
+            该方法用于在初始化后设置vt_symbol和vt_positionid属性。
+            - vt_symbol格式为"{symbol}.{exchange.value}"
+            - vt_positionid格式为"{gateway_name}.{vt_symbol}.{direction.value}"
+        """
         self.vt_symbol: str = f"{self.symbol}.{self.exchange.value}"
         self.vt_positionid: str = f"{self.gateway_name}.{self.vt_symbol}.{self.direction.value}"
 
@@ -198,8 +315,13 @@ class PositionData(BaseData):
 @dataclass
 class AccountData(BaseData):
     """
-    Account data contains information about balance, frozen and
-    available.
+    账户数据类，包含账户的余额、冻结金额和可用金额信息，继承自BaseData。
+
+    参数:
+        accountid (str): 账户ID
+
+        balance (float, 可选): 账户总余额，默认为0
+        frozen (float, 可选): 冻结金额，默认为0
     """
 
     accountid: str
@@ -208,7 +330,14 @@ class AccountData(BaseData):
     frozen: float = 0
 
     def __post_init__(self) -> None:
-        """"""
+        """
+        初始化方法，在dataclass实例化后自动调用。
+        
+        总结:
+            该方法用于在初始化后设置available和vt_accountid属性。
+            - available表示可用金额，计算方式为balance减去frozen。
+            - vt_accountid格式为"{gateway_name}.{accountid}"。
+        """
         self.available: float = self.balance - self.frozen
         self.vt_accountid: str = f"{self.gateway_name}.{self.accountid}"
 
@@ -216,21 +345,31 @@ class AccountData(BaseData):
 @dataclass
 class LogData(BaseData):
     """
-    Log data is used for recording log messages on GUI or in log files.
+    日志数据类，用于在GUI或日志文件中记录日志信息，继承自BaseData。
+
+    参数:
+        msg (str): 日志消息内容
+        level (int, 可选): 日志级别，默认为INFO级别
     """
 
     msg: str
     level: int = INFO
 
     def __post_init__(self) -> None:
-        """"""
+        """
+        初始化方法，在dataclass实例化后自动调用。
+        
+        总结:
+            该方法用于在初始化后设置time属性，记录当前时间。
+            - time表示日志记录的时间，使用datetime.now()获取当前时间。
+        """
         self.time: datetime = datetime.now()
 
 
 @dataclass
 class ContractData(BaseData):
     """
-    Contract data contains basic information about each contract traded.
+    合同数据包含有关每个合同的基本信息。
     """
 
     symbol: str
@@ -262,8 +401,8 @@ class ContractData(BaseData):
 @dataclass
 class QuoteData(BaseData):
     """
-    Quote data contains information for tracking lastest status
-    of a specific quote.
+    报价数据包含用于跟踪最后状态的信息
+    特定报价。
     """
 
     symbol: str
@@ -287,13 +426,13 @@ class QuoteData(BaseData):
 
     def is_active(self) -> bool:
         """
-        Check if the quote is active.
+        检查报价是否处于活动状态。
         """
         return self.status in ACTIVE_STATUSES
 
     def create_cancel_request(self) -> "CancelRequest":
         """
-        Create cancel request object from quote.
+        从报价创建取消请求对象。
         """
         req: CancelRequest = CancelRequest(
             orderid=self.quoteid, symbol=self.symbol, exchange=self.exchange
@@ -304,7 +443,7 @@ class QuoteData(BaseData):
 @dataclass
 class SubscribeRequest:
     """
-    Request sending to specific gateway for subscribing tick data update.
+    请求发送到特定网关以订阅tick数据更新。
     """
 
     symbol: str
@@ -318,7 +457,7 @@ class SubscribeRequest:
 @dataclass
 class OrderRequest:
     """
-    Request sending to specific gateway for creating a new order.
+    请求发送到特定网关以创建新订单。
     """
 
     symbol: str
@@ -336,7 +475,7 @@ class OrderRequest:
 
     def create_order_data(self, orderid: str, gateway_name: str) -> OrderData:
         """
-        Create order data from request.
+        从请求创建订单数据。
         """
         order: OrderData = OrderData(
             symbol=self.symbol,
@@ -356,7 +495,7 @@ class OrderRequest:
 @dataclass
 class CancelRequest:
     """
-    Request sending to specific gateway for canceling an existing order.
+    请求发送到特定网关取消现有订单。
     """
 
     orderid: str
@@ -371,7 +510,7 @@ class CancelRequest:
 @dataclass
 class HistoryRequest:
     """
-    Request sending to specific gateway for querying history data.
+    请求发送到特定网关查询历史记录数据。
     """
 
     symbol: str
@@ -388,7 +527,7 @@ class HistoryRequest:
 @dataclass
 class QuoteRequest:
     """
-    Request sending to specific gateway for creating a new quote.
+    请求发送到特定网关以创建新的报价。
     """
 
     symbol: str
